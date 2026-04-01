@@ -1,212 +1,62 @@
-import java.util.*;
+Book My Stay App
+This project presents the design and implementation of a Hotel Booking Management System to illustrate the practical application of Core Java and fundamental data structures in real-world scenarios. The system is developed incrementally, with each use case introducing a specific concept that addresses common software engineering challenges such as fair request handling, inventory consistency, and prevention of double-booking. By focusing on core logic and system behavior rather than user interface concerns, the project enables learners to understand not only how data structures are used, but why they are essential in scalable and maintainable software systems.
 
-public class BookMyStayApp {
+Use Case 7: Add-On Service Selection
+Goal: Extend the booking model to support optional services, demonstrating how real-world business features can be added without modifying core booking or allocation logic.
 
-    // ---------------- ROOM CLASSES ----------------
-    static abstract class Room {
+        Actor:
 
-        private String type;
-        private int beds;
-        private int size;
-        private double price;
+Guest – selects optional services for an existing reservation.
+        Add-On Service – represents an individual optional offering.
+        Add-On Service Manager – manages the association between reservations and selected services.
+Flow:
 
-        public Room(String type, int beds, int size, double price) {
-            this.type = type;
-            this.beds = beds;
-            this.size = size;
-            this.price = price;
-        }
+Guest selects one or more add-on services.
+Selected services are added to a list.
+The list of services is mapped to the corresponding reservation ID.
+Additional cost for the reservation is calculated.
+Core booking and inventory state remain unchanged.
+Key Concepts Used
+Business Extensibility - Real-world bookings often include additional offerings beyond the primary product. The system must support new features without disrupting existing logic.
+        One-to-Many Relationship - A single reservation can have multiple associated services. This relationship is modeled using a map from reservation ID to a list of services.
+Map and List Combination - Map<String, List<Service>> allows efficient lookup of services for a reservation. Lists preserve insertion order and allow multiple services to be attached.
+Composition over Inheritance - Services are composed with reservations rather than inherited. This avoids rigid class hierarchies and supports flexible feature growth.
+Separation of Core and Optional Features - Add-on services are managed independently of room allocation and inventory. This prevents optional features from complicating critical booking workflows.
+Cost Aggregation - Service costs are calculated separately and combined when needed. This keeps pricing logic modular and easier to extend.
+        Key Requirements
+Allow multiple services to be attached to a single reservation.
+Store selected services using a reservation-to-services mapping.
+Calculate total additional cost for selected services.
+Ensure add-on logic does not modify booking or inventory state.
+Support easy addition of new service types.
+Key Benefits
+Flexible attachment of optional services to reservations
+Clean mapping between bookings and value-added features
+Easy expansion of services without core booking changes
+Drawbacks of Previous Use Case
+Use Case 6 confirmed room allocation but treated bookings as static entities.
+Without add-on support, the system could not model common real-world booking enhancements.
+Please refer to the code snapshot below to write your code
 
-        public String getType() {
-            return type;
-        }
 
-        public void displayDetails() {
-            System.out.println("Room Type: " + type);
-            System.out.println("Beds: " + beds);
-            System.out.println("Room Size: " + size + " sq ft");
-            System.out.println("Price per Night: $" + price);
-        }
-    }
 
-    static class SingleRoom extends Room {
-        public SingleRoom() {
-            super("Single Room", 1, 200, 80.0);
-        }
-    }
+Please refer to the code snapshot below to write your code
 
-    static class DoubleRoom extends Room {
-        public DoubleRoom() {
-            super("Double Room", 2, 350, 120.0);
-        }
-    }
 
-    static class SuiteRoom extends Room {
-        public SuiteRoom() {
-            super("Suite Room", 3, 600, 250.0);
-        }
-    }
 
-    // ---------------- INVENTORY ----------------
-    static class RoomInventory {
+Please refer to the code snapshot below to write your code
 
-        private HashMap<String, Integer> inventory;
 
-        public RoomInventory() {
-            inventory = new HashMap<>();
-            inventory.put("Single Room", 2);
-            inventory.put("Double Room", 1);
-            inventory.put("Suite Room", 1);
-        }
 
-        public int getAvailability(String roomType) {
-            return inventory.getOrDefault(roomType, 0);
-        }
+Please refer to the code snapshot below to write your code
 
-        public void reduceAvailability(String roomType) {
-            int count = inventory.getOrDefault(roomType, 0);
-            if (count > 0) {
-                inventory.put(roomType, count - 1);
-            }
-        }
 
-        public void displayInventory() {
-            System.out.println("\nInventory Status:");
-            for (Map.Entry<String, Integer> entry : inventory.entrySet()) {
-                System.out.println(entry.getKey() + " -> " + entry.getValue());
-            }
-        }
-    }
 
-    // ---------------- RESERVATION ----------------
-    static class Reservation {
-        String guestName;
-        String roomType;
+Please refer to the code snapshot below to write your code
 
-        public Reservation(String guestName, String roomType) {
-            this.guestName = guestName;
-            this.roomType = roomType;
-        }
-    }
 
-    // ---------------- QUEUE ----------------
-    static class BookingRequestQueue {
 
-        private Queue<Reservation> queue = new LinkedList<>();
+Please first compile the program using javac UseCase7AddOnServiceSelection.java and run the Program using java UseCase7AddOnServiceSelection as shown below
 
-        public void addRequest(Reservation r) {
-            queue.offer(r);
-        }
 
-        public Reservation getNextRequest() {
-            return queue.poll(); // FIFO
-        }
 
-        public boolean isEmpty() {
-            return queue.isEmpty();
-        }
-    }
-
-    // ---------------- BOOKING SERVICE ----------------
-    static class BookingService {
-
-        private RoomInventory inventory;
-
-        // Track all allocated IDs (uniqueness)
-        private Set<String> allocatedRoomIds = new HashSet<>();
-
-        // Map room type → allocated IDs
-        private Map<String, Set<String>> roomAllocations = new HashMap<>();
-
-        private int idCounter = 100;
-
-        public BookingService(RoomInventory inventory) {
-            this.inventory = inventory;
-        }
-
-        // Generate unique room ID
-        private String generateRoomId(String roomType) {
-            idCounter++;
-            String prefix = roomType.replace(" ", "").toUpperCase();
-            return prefix + "-" + idCounter;
-        }
-
-        // PROCESS QUEUE
-        public void processBookings(BookingRequestQueue queue) {
-
-            System.out.println("\nProcessing Booking Requests...");
-            System.out.println("----------------------------------");
-
-            while (!queue.isEmpty()) {
-
-                Reservation req = queue.getNextRequest();
-
-                String type = req.roomType;
-
-                // Check availability
-                if (inventory.getAvailability(type) > 0) {
-
-                    String roomId = generateRoomId(type);
-
-                    // Ensure uniqueness (Set prevents duplicates)
-                    if (!allocatedRoomIds.contains(roomId)) {
-
-                        allocatedRoomIds.add(roomId);
-
-                        // Map room type → IDs
-                        roomAllocations
-                                .computeIfAbsent(type, k -> new HashSet<>())
-                                .add(roomId);
-
-                        // Update inventory immediately
-                        inventory.reduceAvailability(type);
-
-                        System.out.println("Booking CONFIRMED for " + req.guestName +
-                                " | Room: " + type +
-                                " | ID: " + roomId);
-                    }
-
-                } else {
-                    System.out.println("Booking FAILED for " + req.guestName +
-                            " | Room type unavailable: " + type);
-                }
-            }
-        }
-
-        public void displayAllocations() {
-            System.out.println("\nAllocated Rooms:");
-            for (Map.Entry<String, Set<String>> entry : roomAllocations.entrySet()) {
-                System.out.println(entry.getKey() + " -> " + entry.getValue());
-            }
-        }
-    }
-
-    // ---------------- MAIN ----------------
-    public static void main(String[] args) {
-
-        System.out.println("Book My Stay - Room Allocation सिस्टम");
-        System.out.println("----------------------------------");
-
-        // Inventory
-        RoomInventory inventory = new RoomInventory();
-        inventory.displayInventory();
-
-        // Queue
-        BookingRequestQueue queue = new BookingRequestQueue();
-
-        queue.addRequest(new Reservation("Alice", "Single Room"));
-        queue.addRequest(new Reservation("Bob", "Single Room"));
-        queue.addRequest(new Reservation("Charlie", "Single Room")); // should fail
-        queue.addRequest(new Reservation("David", "Double Room"));
-
-        // Booking Service
-        BookingService service = new BookingService(inventory);
-
-        // Process queue
-        service.processBookings(queue);
-
-        // Final state
-        service.displayAllocations();
-        inventory.displayInventory();
-    }
-}
